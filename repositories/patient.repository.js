@@ -49,6 +49,30 @@ class PatientRepository {
         const result = await db.query(query, [id]);
         return result.rows[0];
     }
+
+    /**
+     * Get only patients that have had at least one appointment or medical record
+     * with the given doctor. Used for the Doctor role.
+     */
+    async findByDoctorId(doctor_id, searchQuery = null) {
+        let query = `
+            SELECT DISTINCT p.*
+            FROM PATIENTS p
+            WHERE p.id IN (
+                SELECT patient_id FROM APPOINTMENTS WHERE doctor_id = $1
+                UNION
+                SELECT patient_id FROM MEDICAL_RECORDS WHERE doctor_id = $1
+            )
+        `;
+        const params = [doctor_id];
+        if (searchQuery) {
+            query += ' AND (p.nama ILIKE $2 OR p.nik ILIKE $2)';
+            params.push(`%${searchQuery}%`);
+        }
+        query += ' ORDER BY p.nama ASC LIMIT 50;';
+        const result = await db.query(query, params);
+        return result.rows;
+    }
 }
 
 module.exports = new PatientRepository();

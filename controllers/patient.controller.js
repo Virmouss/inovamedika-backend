@@ -14,12 +14,23 @@ const createPatient = async (req, res) => {
 
 const getAllPatients = async (req, res) => {
     try {
-        const patients = await patientService.getAllPatients(req.query.search);
+        let patients;
+        if (req.user.role === 'Doctor') {
+            // Doctors only see patients they have treated
+            if (!req.user.doctor_id) {
+                return res.status(400).json({ status: 'false', message: 'validation error', error: 'No doctor profile linked to this user' });
+            }
+            patients = await patientService.getPatientsByDoctor(req.user.doctor_id, req.query.search);
+        } else {
+            // Registrators and Admins see all patients
+            patients = await patientService.getAllPatients(req.query.search);
+        }
         res.json({ status: 'true', message: 'success', data: patients });
     } catch (err) {
         res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });
     }
 };
+
 
 const getPatientById = async (req, res) => {
     try {

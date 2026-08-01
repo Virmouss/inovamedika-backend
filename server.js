@@ -13,12 +13,16 @@ const patientRoutes = require('./routes/patient.routes');
 const userRoutes = require('./routes/user.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const queueRoutes = require('./routes/queue.routes');
+const medicalRecordRoutes = require('./routes/medical-record.routes');
+const prescriptionRoutes = require('./routes/prescription.routes');
 
-app.use('/api', authRoutes); // /api/login, /api/logout
+app.use('/api', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/registrations', appointmentRoutes);
 app.use('/api/queues', queueRoutes);
+app.use('/api/medical-records', medicalRecordRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'true', message: 'success', data: { service: 'Mini Clinic API' } });

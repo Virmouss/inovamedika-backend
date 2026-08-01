@@ -10,6 +10,11 @@ class PatientService {
         return await patientRepository.findAll(searchQuery);
     }
 
+    async getPatientsByDoctor(doctor_id, searchQuery = null) {
+        return await patientRepository.findByDoctorId(doctor_id, searchQuery);
+    }
+
+
     async getPatientById(id) {
         const patient = await patientRepository.findById(id);
         if (!patient) {
