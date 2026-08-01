@@ -49,7 +49,8 @@ CREATE TABLE IF NOT EXISTS APPOINTMENTS (
     poli VARCHAR(50),
     keluhan_awal TEXT,
     jenis_pembayaran VARCHAR(50),
-    status_kunjungan VARCHAR(20) CHECK (status_kunjungan IN ('waiting', 'called', 'done', 'cancelled')) DEFAULT 'waiting',
+    queue_number VARCHAR(10) NULL,
+    status_kunjungan VARCHAR(20) CHECK (status_kunjungan IN ('waiting', 'called', 'assessing', 'done', 'cancelled')) DEFAULT 'waiting',
     jadwal_kunjungan TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

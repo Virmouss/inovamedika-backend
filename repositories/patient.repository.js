@@ -13,9 +13,15 @@ class PatientRepository {
         return result.rows[0];
     }
 
-    async findAll() {
-        const query = 'SELECT * FROM PATIENTS ORDER BY created_at DESC;';
-        const result = await db.query(query);
+    async findAll(searchQuery = null) {
+        let query = 'SELECT * FROM PATIENTS';
+        const params = [];
+        if (searchQuery) {
+            query += ' WHERE nama ILIKE $1 OR nik ILIKE $1';
+            params.push(`%${searchQuery}%`);
+        }
+        query += ' ORDER BY created_at DESC LIMIT 50;';
+        const result = await db.query(query, params);
         return result.rows;
     }
 

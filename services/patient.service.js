@@ -6,8 +6,8 @@ class PatientService {
         return await patientRepository.create(patientData);
     }
 
-    async getAllPatients() {
-        return await patientRepository.findAll();
+    async getAllPatients(searchQuery = null) {
+        return await patientRepository.findAll(searchQuery);
     }
 
     async getPatientById(id) {

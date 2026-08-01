@@ -14,7 +14,7 @@ const createPatient = async (req, res) => {
 
 const getAllPatients = async (req, res) => {
     try {
-        const patients = await patientService.getAllPatients();
+        const patients = await patientService.getAllPatients(req.query.search);
         res.json({ status: 'true', message: 'success', data: patients });
     } catch (err) {
         res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });

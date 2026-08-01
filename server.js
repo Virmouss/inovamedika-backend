@@ -11,10 +11,14 @@ app.use(express.json());
 const authRoutes = require('./routes/auth.routes');
 const patientRoutes = require('./routes/patient.routes');
 const userRoutes = require('./routes/user.routes');
+const appointmentRoutes = require('./routes/appointment.routes');
+const queueRoutes = require('./routes/queue.routes');
 
 app.use('/api', authRoutes); // /api/login, /api/logout
 app.use('/api/patients', patientRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/registrations', appointmentRoutes);
+app.use('/api/queues', queueRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'true', message: 'success', data: { service: 'Mini Clinic API' } });
