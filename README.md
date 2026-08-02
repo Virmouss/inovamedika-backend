@@ -1,5 +1,5 @@
-# Inovamedika Asessment Test Backend API
-
+# Inovamedika Technical Test Backend API
+Nama: Izzan Alfadhil
 ---
 
 ## 📋 Daftar Isi
