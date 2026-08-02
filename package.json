@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "init-db": "node init-db.js",
+    "seed": "node seed-dummy-data.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

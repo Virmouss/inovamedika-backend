@@ -20,12 +20,19 @@ const createAppointment = async (req, res) => {
 
 const getAllAppointments = async (req, res) => {
     try {
-        const filters = {};
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const filters = { page, limit };
         if (req.query.date) filters.date = req.query.date;
         if (req.query.status) filters.status = req.query.status;
 
-        const appointments = await appointmentService.getAllAppointments(filters);
-        res.json({ status: 'true', message: 'success', data: appointments });
+        const result = await appointmentService.getAllAppointments(filters);
+        const totalPages = Math.ceil(result.total / limit);
+        res.json({
+            status: 'true', message: 'success',
+            data: result.rows,
+            pagination: { page, limit, total: result.total, totalPages }
+        });
     } catch (err) {
         res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });
     }

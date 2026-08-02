@@ -14,18 +14,26 @@ const createPatient = async (req, res) => {
 
 const getAllPatients = async (req, res) => {
     try {
-        let patients;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const search = req.query.search || null;
+
+        let result;
         if (req.user.role === 'Doctor') {
-            // Doctors only see patients they have treated
             if (!req.user.doctor_id) {
                 return res.status(400).json({ status: 'false', message: 'validation error', error: 'No doctor profile linked to this user' });
             }
-            patients = await patientService.getPatientsByDoctor(req.user.doctor_id, req.query.search);
+            result = await patientService.getPatientsByDoctor(req.user.doctor_id, search, page, limit);
         } else {
-            // Registrators and Admins see all patients
-            patients = await patientService.getAllPatients(req.query.search);
+            result = await patientService.getAllPatients(search, page, limit);
         }
-        res.json({ status: 'true', message: 'success', data: patients });
+
+        const totalPages = Math.ceil(result.total / limit);
+        res.json({
+            status: 'true', message: 'success',
+            data: result.rows,
+            pagination: { page, limit, total: result.total, totalPages }
+        });
     } catch (err) {
         res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });
     }

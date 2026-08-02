@@ -8,12 +8,12 @@ class MedicalRecordService {
         return await medicalRecordRepository.create(data);
     }
 
-    async getAllRecords() {
-        return await medicalRecordRepository.findAll();
+    async getAllRecords(page = 1, limit = 10) {
+        return await medicalRecordRepository.findAll({ page, limit });
     }
 
-    async getRecordsByDoctor(doctor_id) {
-        return await medicalRecordRepository.findByDoctorId(doctor_id);
+    async getRecordsByDoctor(doctor_id, page = 1, limit = 10) {
+        return await medicalRecordRepository.findByDoctorId(doctor_id, { page, limit });
     }
 
     async getRecordsByPatient(patient_id) {

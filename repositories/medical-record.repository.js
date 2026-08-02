@@ -37,7 +37,11 @@ class MedicalRecordRepository {
         return record;
     }
 
-    async findAll() {
+    async findAll({ page = 1, limit = 10 } = {}) {
+        const offset = (page - 1) * limit;
+        const countResult = await db.query(`SELECT COUNT(*) FROM MEDICAL_RECORDS`);
+        const total = parseInt(countResult.rows[0].count, 10);
+
         const query = `
             SELECT 
                 mr.*,
@@ -48,13 +52,21 @@ class MedicalRecordRepository {
             FROM MEDICAL_RECORDS mr
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
-            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC;
+            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC
+            LIMIT $1 OFFSET $2;
         `;
-        const result = await db.query(query);
-        return result.rows;
+        const result = await db.query(query, [limit, offset]);
+        return { rows: result.rows, total };
     }
 
-    async findByDoctorId(doctor_id) {
+    async findByDoctorId(doctor_id, { page = 1, limit = 10 } = {}) {
+        const offset = (page - 1) * limit;
+        const countResult = await db.query(
+            `SELECT COUNT(*) FROM MEDICAL_RECORDS WHERE doctor_id = $1`,
+            [doctor_id]
+        );
+        const total = parseInt(countResult.rows[0].count, 10);
+
         const query = `
             SELECT 
                 mr.*,
@@ -66,10 +78,11 @@ class MedicalRecordRepository {
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
             WHERE mr.doctor_id = $1
-            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC;
+            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC
+            LIMIT $2 OFFSET $3;
         `;
-        const result = await db.query(query, [doctor_id]);
-        return result.rows;
+        const result = await db.query(query, [doctor_id, limit, offset]);
+        return { rows: result.rows, total };
     }
 
     async findByPatientId(patient_id) {
@@ -96,6 +109,10 @@ class MedicalRecordRepository {
                 mr.*,
                 p.nama AS patient_name,
                 p.nik AS patient_nik,
+                p.kelamin AS patient_kelamin,
+                p.tanggal_lahir AS patient_dob,
+                p.nomor_telepon AS patient_phone,
+                p.alamat AS patient_alamat,
                 d.name AS doctor_name,
                 d.spesialis AS doctor_spesialis
             FROM MEDICAL_RECORDS mr
@@ -104,7 +121,21 @@ class MedicalRecordRepository {
             WHERE mr.id = $1;
         `;
         const result = await db.query(query, [id]);
-        return result.rows[0];
+        if (!result.rows[0]) return null;
+
+        const record = result.rows[0];
+
+        // Fetch associated prescriptions from the PRESCRIPTIONS table
+        const prescriptionsResult = await db.query(
+            `SELECT id, obat, dosis, instruksi, created_at
+             FROM PRESCRIPTIONS
+             WHERE medical_record_id = $1
+             ORDER BY created_at ASC;`,
+            [id]
+        );
+        record.prescriptions = prescriptionsResult.rows;
+
+        return record;
     }
 
     /**

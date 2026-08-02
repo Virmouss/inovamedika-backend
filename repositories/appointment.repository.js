@@ -14,7 +14,32 @@ class AppointmentRepository {
     }
 
     async findAll(filters = {}) {
-        let query = `
+        const { date, status, page = 1, limit = 10 } = filters;
+        const offset = (page - 1) * limit;
+
+        const conditions = [];
+        const params = [];
+
+        if (date) {
+            params.push(date);
+            conditions.push(`DATE(a.jadwal_kunjungan) = $${params.length}`);
+        }
+
+        if (status) {
+            params.push(status);
+            conditions.push(`a.status_kunjungan = $${params.length}`);
+        }
+
+        const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
+
+        const countResult = await db.query(
+            `SELECT COUNT(*) FROM APPOINTMENTS a${whereClause}`,
+            params
+        );
+        const total = parseInt(countResult.rows[0].count, 10);
+
+        params.push(limit, offset);
+        const dataQuery = `
             SELECT 
                 a.*,
                 p.nama AS patient_name,
@@ -24,29 +49,14 @@ class AppointmentRepository {
             FROM APPOINTMENTS a
             JOIN PATIENTS p ON a.patient_id = p.id
             JOIN DOCTORS d ON a.doctor_id = d.id
+            ${whereClause}
+            ORDER BY a.jadwal_kunjungan DESC, a.created_at DESC, a.id DESC
+            LIMIT $${params.length - 1} OFFSET $${params.length}
         `;
-        const conditions = [];
-        const params = [];
-
-        if (filters.date) {
-            params.push(filters.date);
-            conditions.push(`DATE(a.jadwal_kunjungan) = $${params.length}`);
-        }
-
-        if (filters.status) {
-            params.push(filters.status);
-            conditions.push(`a.status_kunjungan = $${params.length}`);
-        }
-
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-
-        query += ' ORDER BY a.jadwal_kunjungan DESC, a.created_at DESC, a.id DESC';
-
-        const result = await db.query(query, params);
-        return result.rows;
+        const result = await db.query(dataQuery, params);
+        return { rows: result.rows, total };
     }
+
 
     async findById(id) {
         const query = `
