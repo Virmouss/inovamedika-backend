@@ -1,15 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getPrescription, createOrUpdatePrescription } = require('../controllers/medical-record.controller');
-const { authenticateToken } = require('../middleware/auth.middleware');
+const prescriptionController = require('../controllers/prescription.controller');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth.middleware');
 
 router.use(authenticateToken);
 
-// GET /api/prescriptions/:id — fetch prescription text for a medical record
-router.get('/:id', getPrescription);
+// POST /api/prescriptions — Create a new prescription (Doctor or Admin only)
+router.post('/', authorizeRoles('Doctor', 'Admin'), prescriptionController.createPrescription);
 
-// POST /api/prescriptions — update/set prescription for a medical record
-// Body: { medical_record_id, resep_obat }
-router.post('/', createOrUpdatePrescription);
+// GET /api/prescriptions/:id — Get prescription by its ID (any authenticated user)
+router.get('/:id', prescriptionController.getPrescription);
 
 module.exports = router;

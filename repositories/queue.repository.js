@@ -17,7 +17,7 @@ class QueueRepository {
             JOIN PATIENTS p ON a.patient_id = p.id
             JOIN DOCTORS d ON a.doctor_id = d.id
             WHERE DATE(a.jadwal_kunjungan) = CURRENT_DATE
-            ORDER BY a.queue_number ASC NULLS LAST, a.jadwal_kunjungan ASC;
+            ORDER BY a.queue_number DESC NULLS LAST, a.jadwal_kunjungan DESC, a.created_at DESC, a.id DESC;
         `;
         const result = await db.query(query);
         return result.rows;

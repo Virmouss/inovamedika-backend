@@ -42,7 +42,7 @@ class AppointmentRepository {
             query += ' WHERE ' + conditions.join(' AND ');
         }
 
-        query += ' ORDER BY a.jadwal_kunjungan ASC';
+        query += ' ORDER BY a.jadwal_kunjungan DESC, a.created_at DESC, a.id DESC';
 
         const result = await db.query(query, params);
         return result.rows;

@@ -20,7 +20,7 @@ class PatientRepository {
             query += ' WHERE nama ILIKE $1 OR nik ILIKE $1';
             params.push(`%${searchQuery}%`);
         }
-        query += ' ORDER BY created_at DESC LIMIT 50;';
+        query += ' ORDER BY created_at DESC, id DESC LIMIT 50;';
         const result = await db.query(query, params);
         return result.rows;
     }
@@ -69,7 +69,7 @@ class PatientRepository {
             query += ' AND (p.nama ILIKE $2 OR p.nik ILIKE $2)';
             params.push(`%${searchQuery}%`);
         }
-        query += ' ORDER BY p.nama ASC LIMIT 50;';
+        query += ' ORDER BY p.created_at DESC, p.id DESC LIMIT 50;';
         const result = await db.query(query, params);
         return result.rows;
     }

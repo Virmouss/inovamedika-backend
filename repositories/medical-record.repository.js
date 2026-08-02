@@ -48,7 +48,7 @@ class MedicalRecordRepository {
             FROM MEDICAL_RECORDS mr
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
-            ORDER BY mr.visit_date DESC;
+            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC;
         `;
         const result = await db.query(query);
         return result.rows;
@@ -66,7 +66,7 @@ class MedicalRecordRepository {
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
             WHERE mr.doctor_id = $1
-            ORDER BY mr.visit_date DESC;
+            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC;
         `;
         const result = await db.query(query, [doctor_id]);
         return result.rows;
@@ -84,7 +84,7 @@ class MedicalRecordRepository {
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
             WHERE mr.patient_id = $1
-            ORDER BY mr.visit_date DESC;
+            ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC;
         `;
         const result = await db.query(query, [patient_id]);
         return result.rows;
@@ -174,7 +174,7 @@ class MedicalRecordRepository {
             WHERE a.doctor_id = $1
               AND DATE(a.jadwal_kunjungan) = CURRENT_DATE
               AND a.status_kunjungan NOT IN ('cancelled')
-            ORDER BY a.queue_number ASC NULLS LAST;
+            ORDER BY a.queue_number DESC NULLS LAST, a.jadwal_kunjungan DESC, a.created_at DESC, a.id DESC;
         `;
         const result = await db.query(query, [doctor_id]);
         return result.rows;

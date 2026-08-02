@@ -55,8 +55,16 @@ CREATE TABLE IF NOT EXISTS APPOINTMENTS (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS PRESCRIPTIONS (
+    id SERIAL PRIMARY KEY,
+    medical_record_id INT NOT NULL REFERENCES MEDICAL_RECORDS(id) ON DELETE CASCADE,
+    obat TEXT NOT NULL,
+    dosis TEXT,
+    instruksi TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insert admin user (password: admin123)
--- We use DO INSTEAD to mimic INSERT IGNORE or handle conflict in PostgreSQL
 INSERT INTO USERS (username, password, role)
 VALUES ('admin', '$2b$10$71qEMr8IeqKyiv27wZWxJed6nTjGxdi45jkI3QFU7cXql5LhRvQ36', 'Admin')
 ON CONFLICT (username) DO NOTHING;
