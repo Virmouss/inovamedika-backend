@@ -14,6 +14,28 @@ const getTodayQueue = async (req, res) => {
         res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });
     }
 };
+/**
+ * POST /api/queues
+ * Generate/assign a queue number to a today's appointment or ensure today's queue numbers.
+ * Body (optional): { appointment_id }
+ */
+const createQueue = async (req, res) => {
+    try {
+        const { appointment_id } = req.body || {};
+        if (appointment_id) {
+            const appointment = await queueService.generateQueueForAppointment(appointment_id);
+            return res.status(201).json({ status: 'true', message: 'success', data: appointment });
+        }
+        const queue = await queueService.ensureQueueNumbers();
+        res.status(201).json({ status: 'true', message: 'success', data: queue });
+    } catch (err) {
+        if (err.message === 'Appointment not found') {
+            return res.status(404).json({ status: 'false', message: 'validation error', error: err.message });
+        }
+        res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });
+    }
+};
+
 
 /**
  * PUT /api/queues/:id/call
@@ -76,6 +98,7 @@ const removeFromQueue = async (req, res) => {
 
 module.exports = {
     getTodayQueue,
+    createQueue,
     callPatient,
     updateStatus,
     removeFromQueue

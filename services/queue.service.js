@@ -78,6 +78,15 @@ class QueueService {
 
         return await queueRepository.getTodayQueue();
     }
+
+    async generateQueueForAppointment(appointment_id) {
+        const appt = await queueRepository.findById(appointment_id);
+        if (!appt) throw new Error('Appointment not found');
+        if (appt.queue_number) return appt;
+
+        const queueNumber = await queueRepository.generateQueueNumber();
+        return await queueRepository.assignQueueNumber(appointment_id, queueNumber);
+    }
 }
 
 module.exports = new QueueService();
