@@ -14,7 +14,7 @@ class AppointmentRepository {
     }
 
     async findAll(filters = {}) {
-        const { date, status, page = 1, limit = 10 } = filters;
+        const { date, status, search, page = 1, limit = 10 } = filters;
         const offset = (page - 1) * limit;
 
         const conditions = [];
@@ -30,10 +30,21 @@ class AppointmentRepository {
             conditions.push(`a.status_kunjungan = $${params.length}`);
         }
 
+        if (search) {
+            params.push(`%${search}%`);
+            const pIdx = params.length;
+            conditions.push(`(p.nama ILIKE $${pIdx} OR p.nik ILIKE $${pIdx} OR d.name ILIKE $${pIdx} OR a.poli ILIKE $${pIdx} OR a.keluhan_awal ILIKE $${pIdx})`);
+        }
+
+        const joinClause = `
+            JOIN PATIENTS p ON a.patient_id = p.id
+            JOIN DOCTORS d ON a.doctor_id = d.id
+        `;
+
         const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
 
         const countResult = await db.query(
-            `SELECT COUNT(*) FROM APPOINTMENTS a${whereClause}`,
+            `SELECT COUNT(*) FROM APPOINTMENTS a ${joinClause} ${whereClause}`,
             params
         );
         const total = parseInt(countResult.rows[0].count, 10);

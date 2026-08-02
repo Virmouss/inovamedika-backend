@@ -23,15 +23,16 @@ const getAllOrDoctorRecords = async (req, res) => {
     try {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
+        const search = req.query.search || null;
 
         let result;
         if (req.user.role === 'Admin') {
-            result = await medicalRecordService.getAllRecords(page, limit);
+            result = await medicalRecordService.getAllRecords(page, limit, search);
         } else {
             if (!req.user.doctor_id) {
                 return res.status(400).json({ status: 'false', message: 'validation error', error: 'No doctor profile linked to this user' });
             }
-            result = await medicalRecordService.getRecordsByDoctor(req.user.doctor_id, page, limit);
+            result = await medicalRecordService.getRecordsByDoctor(req.user.doctor_id, page, limit, search);
         }
 
         const totalPages = Math.ceil(result.total / limit);

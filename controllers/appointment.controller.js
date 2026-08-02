@@ -25,6 +25,7 @@ const getAllAppointments = async (req, res) => {
         const filters = { page, limit };
         if (req.query.date) filters.date = req.query.date;
         if (req.query.status) filters.status = req.query.status;
+        if (req.query.search) filters.search = req.query.search;
 
         const result = await appointmentService.getAllAppointments(filters);
         const totalPages = Math.ceil(result.total / limit);

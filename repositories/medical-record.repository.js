@@ -37,10 +37,29 @@ class MedicalRecordRepository {
         return record;
     }
 
-    async findAll({ page = 1, limit = 10 } = {}) {
+    async findAll({ searchQuery = null, page = 1, limit = 10 } = {}) {
         const offset = (page - 1) * limit;
-        const countResult = await db.query(`SELECT COUNT(*) FROM MEDICAL_RECORDS`);
+        const params = [];
+        let whereClause = '';
+
+        if (searchQuery) {
+            params.push(`%${searchQuery}%`);
+            whereClause = ' WHERE (p.nama ILIKE $1 OR p.nik ILIKE $1 OR d.name ILIKE $1 OR mr.diagnosa ILIKE $1 OR mr.keluhan_awal ILIKE $1)';
+        }
+
+        const countQuery = `
+            SELECT COUNT(*) 
+            FROM MEDICAL_RECORDS mr
+            JOIN PATIENTS p ON mr.patient_id = p.id
+            JOIN DOCTORS d ON mr.doctor_id = d.id
+            ${whereClause}
+        `;
+        const countResult = await db.query(countQuery, params);
         const total = parseInt(countResult.rows[0].count, 10);
+
+        params.push(limit, offset);
+        const limitParam = `$${params.length - 1}`;
+        const offsetParam = `$${params.length}`;
 
         const query = `
             SELECT 
@@ -52,20 +71,37 @@ class MedicalRecordRepository {
             FROM MEDICAL_RECORDS mr
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
+            ${whereClause}
             ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC
-            LIMIT $1 OFFSET $2;
+            LIMIT ${limitParam} OFFSET ${offsetParam};
         `;
-        const result = await db.query(query, [limit, offset]);
+        const result = await db.query(query, params);
         return { rows: result.rows, total };
     }
 
-    async findByDoctorId(doctor_id, { page = 1, limit = 10 } = {}) {
+    async findByDoctorId(doctor_id, { searchQuery = null, page = 1, limit = 10 } = {}) {
         const offset = (page - 1) * limit;
-        const countResult = await db.query(
-            `SELECT COUNT(*) FROM MEDICAL_RECORDS WHERE doctor_id = $1`,
-            [doctor_id]
-        );
+        const params = [doctor_id];
+        let whereClause = ' WHERE mr.doctor_id = $1';
+
+        if (searchQuery) {
+            params.push(`%${searchQuery}%`);
+            whereClause += ` AND (p.nama ILIKE $2 OR p.nik ILIKE $2 OR mr.diagnosa ILIKE $2 OR mr.keluhan_awal ILIKE $2)`;
+        }
+
+        const countQuery = `
+            SELECT COUNT(*) 
+            FROM MEDICAL_RECORDS mr
+            JOIN PATIENTS p ON mr.patient_id = p.id
+            JOIN DOCTORS d ON mr.doctor_id = d.id
+            ${whereClause}
+        `;
+        const countResult = await db.query(countQuery, params);
         const total = parseInt(countResult.rows[0].count, 10);
+
+        params.push(limit, offset);
+        const limitParam = `$${params.length - 1}`;
+        const offsetParam = `$${params.length}`;
 
         const query = `
             SELECT 
@@ -77,11 +113,11 @@ class MedicalRecordRepository {
             FROM MEDICAL_RECORDS mr
             JOIN PATIENTS p ON mr.patient_id = p.id
             JOIN DOCTORS d ON mr.doctor_id = d.id
-            WHERE mr.doctor_id = $1
+            ${whereClause}
             ORDER BY mr.visit_date DESC, mr.created_at DESC, mr.id DESC
-            LIMIT $2 OFFSET $3;
+            LIMIT ${limitParam} OFFSET ${offsetParam};
         `;
-        const result = await db.query(query, [doctor_id, limit, offset]);
+        const result = await db.query(query, params);
         return { rows: result.rows, total };
     }
 
