@@ -1,2 +1,4 @@
 node_modules/
 .env
+migrate-user-active.js
+migrate-queue.js

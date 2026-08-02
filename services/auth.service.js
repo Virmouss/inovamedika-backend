@@ -14,6 +14,10 @@ class AuthService {
             throw new Error('Invalid username or password');
         }
 
+        if (user.is_active === false) {
+            throw new Error('User account is disabled. Please contact administrator.');
+        }
+
         const token = jwt.sign(
             { id: user.id, username: user.username, role: user.role, doctor_id: user.doctor_id },
             process.env.JWT_SECRET,

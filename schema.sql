@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS USERS (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) CHECK (role IN ('Admin', 'Doctor', 'Registrator')) NOT NULL,
     doctor_id INT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

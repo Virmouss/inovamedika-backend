@@ -18,6 +18,9 @@ const login = async (req, res) => {
         if (err.message === 'Invalid username or password') {
             return res.status(401).json({ status: 'false', message: 'validation error', error: err.message });
         }
+        if (err.message === 'User account is disabled. Please contact administrator.') {
+            return res.status(403).json({ status: 'false', message: 'validation error', error: err.message });
+        }
         console.error(err);
         res.status(500).json({ status: 'false', message: 'internal server error', error: err.message });
     }
